@@ -43,6 +43,7 @@ collapse_vars_side_effects_1: {
                 z = i += 4;
             log(x, z, y, i);
         }
+        f1(), f2(), f3(), f4();
     }
     expect: {
         function f1() {
@@ -73,7 +74,9 @@ collapse_vars_side_effects_1: {
                 y = i += 3;
             log(x, i += 4, y, i);
         }
+        f1(), f2(), f3(), f4();
     }
+    expect_stdout: true
 }
 
 collapse_vars_side_effects_2: {
@@ -823,6 +826,7 @@ collapse_vars_repeated: {
             console.log(e + "!");
         })("!");
     }
+    expect_stdout: true
 }
 
 collapse_vars_closures: {
@@ -1109,6 +1113,7 @@ collapse_vars_eval_and_with: {
             return function() { with (o) console.log(a) };
         })()();
     }
+    expect_stdout: true
 }
 
 collapse_vars_constants: {
@@ -1168,6 +1173,7 @@ collapse_vars_arguments: {
             (function(){console.log(arguments);})(7, 1);
         })();
     }
+    expect_stdout: true
 }
 
 collapse_vars_short_circuit: {
@@ -1317,6 +1323,7 @@ collapse_vars_regexp: {
                 console.log(result[0]);
         })();
     }
+    expect_stdout: true
 }
 
 issue_1537: {
@@ -1407,4 +1414,179 @@ issue_1605_2: {
         }
         (new Object).p = 1;
     }
+}
+
+issue_1631_1: {
+    options = {
+        cascade: true,
+        collapse_vars: true,
+        hoist_funs: true,
+        join_vars: true,
+        sequences: true,
+        side_effects: true,
+    }
+    input: {
+        var pc = 0;
+        function f(x) {
+            pc = 200;
+            return 100;
+        }
+        function x() {
+            var t = f();
+            pc += t;
+            return pc;
+        }
+        console.log(x());
+    }
+    expect: {
+        function f(x) {
+            return pc = 200, 100;
+        }
+        function x() {
+            var t = f();
+            return pc += t;
+        }
+        var pc = 0;
+        console.log(x());
+    }
+    expect_stdout: "300"
+}
+
+issue_1631_2: {
+    options = {
+        cascade: true,
+        collapse_vars: true,
+        hoist_funs: true,
+        join_vars: true,
+        sequences: true,
+        side_effects: true,
+    }
+    input: {
+        var a = 0, b = 1;
+        function f() {
+            a = 2;
+            return 4;
+        }
+        function g() {
+            var t = f();
+            b = a + t;
+            return b;
+        }
+        console.log(g());
+    }
+    expect: {
+        function f() {
+            return a = 2, 4;
+        }
+        function g() {
+            var t = f();
+            return b = a + t;
+        }
+        var a = 0, b = 1;
+        console.log(g());
+    }
+    expect_stdout: "6"
+}
+
+issue_1631_3: {
+    options = {
+        cascade: true,
+        collapse_vars: true,
+        hoist_funs: true,
+        join_vars: true,
+        sequences: true,
+        side_effects: true,
+    }
+    input: {
+        function g() {
+            var a = 0, b = 1;
+            function f() {
+                a = 2;
+                return 4;
+            }
+            var t = f();
+            b = a + t;
+            return b;
+        }
+        console.log(g());
+    }
+    expect: {
+        function g() {
+            function f() {
+                return a = 2, 4;
+            }
+            var a = 0, b = 1, t = f();
+            return b = a + t;
+        }
+        console.log(g());
+    }
+    expect_stdout: "6"
+}
+
+var_side_effects_1: {
+    options = {
+        collapse_vars: true,
+    }
+    input: {
+        var print = console.log.bind(console);
+        function foo(x) {
+            var twice = x * 2;
+            print('Foo:', twice);
+        }
+        foo(10);
+    }
+    expect: {
+        var print = console.log.bind(console);
+        function foo(x) {
+            print('Foo:', 2 * x);
+        }
+        foo(10);
+    }
+    expect_stdout: true
+}
+
+var_side_effects_2: {
+    options = {
+        collapse_vars: true,
+    }
+    input: {
+        var print = console.log.bind(console);
+        function foo(x) {
+            var twice = x.y * 2;
+            print('Foo:', twice);
+        }
+        foo({ y: 10 });
+    }
+    expect: {
+        var print = console.log.bind(console);
+        function foo(x) {
+            var twice = 2 * x.y;
+            print('Foo:', twice);
+        }
+        foo({ y: 10 });
+    }
+    expect_stdout: true
+}
+
+var_side_effects_3: {
+    options = {
+        collapse_vars: true,
+        pure_getters: true,
+    }
+    input: {
+        var print = console.log.bind(console);
+        function foo(x) {
+            var twice = x.y * 2;
+            print('Foo:', twice);
+        }
+        foo({ y: 10 });
+    }
+    expect: {
+        var print = console.log.bind(console);
+        function foo(x) {
+            print('Foo:', 2 * x.y);
+        }
+        foo({ y: 10 });
+    }
+    expect_stdout: true
 }

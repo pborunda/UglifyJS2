@@ -200,6 +200,7 @@ negative_zero: {
             1 / (-0)
         );
     }
+    expect_stdout: true
 }
 
 positive_zero: {
@@ -220,6 +221,7 @@ positive_zero: {
             1 / (0)
         );
     }
+    expect_stdout: true
 }
 
 unsafe_constant: {
@@ -243,6 +245,7 @@ unsafe_constant: {
             (void 0).a
         );
     }
+    expect_stdout: true
 }
 
 unsafe_object: {
@@ -266,6 +269,7 @@ unsafe_object: {
             1..b + 1
         );
     }
+    expect_stdout: true
 }
 
 unsafe_object_nested: {
@@ -289,6 +293,7 @@ unsafe_object_nested: {
             2
         );
     }
+    expect_stdout: true
 }
 
 unsafe_object_complex: {
@@ -312,6 +317,7 @@ unsafe_object_complex: {
             2
         );
     }
+    expect_stdout: true
 }
 
 unsafe_object_repeated: {
@@ -335,6 +341,7 @@ unsafe_object_repeated: {
             1..b + 1
         );
     }
+    expect_stdout: true
 }
 
 unsafe_object_accessor: {
@@ -384,6 +391,7 @@ unsafe_function: {
             ({a:{b:1},b:function(){}}).a.b + 1
         );
     }
+    expect_stdout: true
 }
 
 unsafe_integer_key: {
@@ -411,6 +419,7 @@ unsafe_integer_key: {
             1["1"] + 1
         );
     }
+    expect_stdout: true
 }
 
 unsafe_integer_key_complex: {
@@ -438,6 +447,7 @@ unsafe_integer_key_complex: {
             2
         );
     }
+    expect_stdout: true
 }
 
 unsafe_float_key: {
@@ -465,6 +475,7 @@ unsafe_float_key: {
             1["3.14"] + 1
         );
     }
+    expect_stdout: true
 }
 
 unsafe_float_key_complex: {
@@ -492,6 +503,7 @@ unsafe_float_key_complex: {
             2
         );
     }
+    expect_stdout: true
 }
 
 unsafe_array: {
@@ -527,6 +539,7 @@ unsafe_array: {
             (void 0)[1] + 1
         );
     }
+    expect_stdout: true
 }
 
 unsafe_string: {
@@ -554,6 +567,7 @@ unsafe_string: {
             "11"
         );
     }
+    expect_stdout: true
 }
 
 unsafe_array_bad_index: {
@@ -575,6 +589,7 @@ unsafe_array_bad_index: {
             [1, 2, 3, 4][3.14] + 1
         );
     }
+    expect_stdout: true
 }
 
 unsafe_string_bad_index: {
@@ -596,6 +611,7 @@ unsafe_string_bad_index: {
             "1234"[3.14] + 1
         );
     }
+    expect_stdout: true
 }
 
 unsafe_prototype_function: {
@@ -642,6 +658,7 @@ call_args: {
         console.log(1);
         +(1, 1);
     }
+    expect_stdout: true
 }
 
 call_args_drop_param: {
@@ -663,6 +680,7 @@ call_args_drop_param: {
         console.log(1);
         +(b, 1);
     }
+    expect_stdout: true
 }
 
 in_boolean_context: {
@@ -700,4 +718,87 @@ in_boolean_context: {
             (foo(), !1)
         );
     }
+    expect_stdout: true
+}
+
+unsafe_charAt: {
+    options = {
+        evaluate  : true,
+        unsafe    : true
+    }
+    input: {
+        console.log(
+            "1234" + 1,
+            "1234".charAt(0) + 1,
+            "1234".charAt(6 - 5) + 1,
+            ("12" + "34").charAt(0) + 1,
+            ("12" + "34").charAt(6 - 5) + 1,
+            [1, 2, 3, 4].join("").charAt(0) + 1
+        );
+    }
+    expect: {
+        console.log(
+            "12341",
+            "11",
+            "21",
+            "11",
+            "21",
+            "11"
+        );
+    }
+    expect_stdout: true
+}
+
+unsafe_charAt_bad_index: {
+    options = {
+        evaluate  : true,
+        unsafe    : true
+    }
+    input: {
+        console.log(
+            "1234".charAt() + 1,
+            "1234".charAt("a") + 1,
+            "1234".charAt(3.14) + 1
+        );
+    }
+    expect: {
+        console.log(
+            "11",
+            "11",
+            "41"
+        );
+    }
+    expect_stdout: true
+}
+
+unsafe_charAt_noop: {
+    options = {
+        evaluate  : true,
+        unsafe    : true
+    }
+    input: {
+        console.log(
+            s.charAt(0),
+            "string".charAt(x)
+        );
+    }
+    expect: {
+        console.log(
+            s.charAt(0),
+            "string".charAt(x)
+        );
+    }
+}
+
+issue_1649: {
+    options = {
+        evaluate: true,
+    }
+    input: {
+        console.log(-1 + -1);
+    }
+    expect: {
+        console.log(-2);
+    }
+    expect_stdout: "-2";
 }

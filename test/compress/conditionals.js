@@ -797,3 +797,139 @@ no_evaluate: {
         }
     }
 }
+
+equality_conditionals_false: {
+    options = {
+        conditionals: false,
+        sequences: true,
+    }
+    input: {
+        function f(a, b, c) {
+            console.log(
+                a == (b ? a : a),
+                a == (b ? a : c),
+                a != (b ? a : a),
+                a != (b ? a : c),
+                a === (b ? a : a),
+                a === (b ? a : c),
+                a !== (b ? a : a),
+                a !== (b ? a : c)
+            );
+        }
+        f(0, 0, 0);
+        f(0, true, 0);
+        f(1, 2, 3);
+        f(1, null, 3);
+        f(NaN);
+        f(NaN, "foo");
+    }
+    expect: {
+        function f(a, b, c) {
+            console.log(
+                a == (b ? a : a),
+                a == (b ? a : c),
+                a != (b ? a : a),
+                a != (b ? a : c),
+                a === (b ? a : a),
+                a === (b ? a : c),
+                a !== (b ? a : a),
+                a !== (b ? a : c)
+            );
+        }
+        f(0, 0, 0),
+        f(0, true, 0),
+        f(1, 2, 3),
+        f(1, null, 3),
+        f(NaN),
+        f(NaN, "foo");
+    }
+    expect_stdout: true
+}
+
+equality_conditionals_true: {
+    options = {
+        conditionals: true,
+        sequences: true,
+    }
+    input: {
+        function f(a, b, c) {
+            console.log(
+                a == (b ? a : a),
+                a == (b ? a : c),
+                a != (b ? a : a),
+                a != (b ? a : c),
+                a === (b ? a : a),
+                a === (b ? a : c),
+                a !== (b ? a : a),
+                a !== (b ? a : c)
+            );
+        }
+        f(0, 0, 0);
+        f(0, true, 0);
+        f(1, 2, 3);
+        f(1, null, 3);
+        f(NaN);
+        f(NaN, "foo");
+    }
+    expect: {
+        function f(a, b, c) {
+            console.log(
+                (b, a == a),
+                a == (b ? a : c),
+                (b, a != a),
+                a != (b ? a : c),
+                (b, a === a),
+                a === (b ? a : c),
+                (b, a !== a),
+                a !== (b ? a : c)
+            );
+        }
+        f(0, 0, 0),
+        f(0, true, 0),
+        f(1, 2, 3),
+        f(1, null, 3),
+        f(NaN),
+        f(NaN, "foo");
+    }
+    expect_stdout: true
+}
+
+issue_1645_1: {
+    options = {
+        conditionals: true,
+    }
+    input: {
+        var a = 100, b = 10;
+        (b = a) ? a++ + (b += a) ? b += a : b += a : b ^= a;
+        console.log(a, b);
+    }
+    expect: {
+        var a = 100, b = 10;
+        (b = a) ? (a++ + (b += a), b += a) : b ^= a;
+        console.log(a,b);
+    }
+    expect_stdout: true
+}
+
+issue_1645_2: {
+    options = {
+        conditionals: true,
+    }
+    input: {
+        var a = 0;
+        function f() {
+            return a++;
+        }
+        f() ? a += 2 : a += 4;
+        console.log(a);
+    }
+    expect: {
+        var a = 0;
+        function f(){
+            return a++;
+        }
+        f() ? a += 2 : a += 4;
+        console.log(a);
+    }
+    expect_stdout: true
+}
